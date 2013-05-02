@@ -130,7 +130,7 @@ module.exports = function ( grunt ) {
                         img = imageReplaces[ pathToResource ];
                         newPath = ( base ) ? path.relative( base, img.sprite ) : path.relative( dir, img.sprite );
                         newPath = newPath.replace( /\\/ig, '/' );
-                        data = data.replace( resources[x], 'background-image: url("' + newPath + '"); background-position: ' +  img.x + 'px -' + img.y + 'px;' );
+                        data = data.replace( resources[x], 'background-image: url("' + newPath + '"); background-position: -' +  img.x + 'px -' + img.y + 'px;' );
                     }
 
                 }
