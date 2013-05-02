@@ -15,11 +15,11 @@
     },
     "license": "MIT",
     "dependencies": {
-        "spritesmith": "0.3.5"
+        "spritesmith": "*"
     },
     "devDependencies": {
-        "grunt": "~0.4.0",
-        "grunt-contrib-jshint": "0.3.5"
+        "grunt": "*",
+	"grunt-contrib-jshint": "*"
     },
     "repositories": [
         {
