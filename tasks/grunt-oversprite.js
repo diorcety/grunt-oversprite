@@ -2,19 +2,16 @@ var spritesmith = require( 'spritesmith' ),
     fs = require( 'fs' ),
     path = require( 'path' );
 
-
 module.exports = function ( grunt ) {
 
     "use strict";
-
     // Export the SpriteMaker function
     grunt.registerMultiTask( 'oversprite', 'Create sprites and updates css.', function () {
-
         var imageReplaces = [],
             that = this,
             done = this.async(),
-            spritelist = this.data.spritelist,
-            csslist = this.data.csslist,
+            spritelist = [this.data.spritelist],
+            csslist = [this.data.csslist],
             ifErrors = false;
 
         // Normalize data and validate paths of images
@@ -72,6 +69,7 @@ module.exports = function ( grunt ) {
 
         var _spriteSmithWrapper = function( config, callback ) {
 
+			var base = ( config.base ) ? path.join( process.cwd(), config.base ) : false;
             var sprite = config.dest;
 
             delete config.sprite;
@@ -94,7 +92,7 @@ module.exports = function ( grunt ) {
 
                     for ( var key in result.coordinates ) {
 
-                        var newKey = path.join( process.cwd(), key );
+                        var newKey = path.normalize(( base ) ? path.relative( base, key ) : path.relative( process.cwd(), key )).replace( /\\/ig, '/' );
 
                         imageReplaces[ newKey ] = tmpResult[ key ];
 
@@ -113,33 +111,25 @@ module.exports = function ( grunt ) {
         // Path resolving function
 
         var _insertSprites = function ( css ) {
-
             var regex     = new RegExp( 'background-image:[\\s]?url\\(["\']?(?!http[s]?|/)([\\w\\d\\s!./\\-\\_]*\\.[\\w?#]+)["\']?\\)[^;]*;', 'ig' ),
-                dir       = path.join( process.cwd(), path.dirname( css.src ) ),
+                dir       = process.cwd(),
+				base      = ( css.base ) ? path.join( dir, css.base ) : false,
                 data      = grunt.file.read( css.src ),
-                base      = ( css.base ) ? path.join( dir, css.base ) : false,
                 resources = data.match( regex ),
                 pathToResource,
                 absolutePath,
                 newPath,
                 img;
-
             if ( resources !== null ) {
 
                 for ( var x = 0; x < resources.length; x++ ) {
 
                     pathToResource = resources[x].replace( regex, '$1' );
+                    if ( imageReplaces[ pathToResource ] !== undefined ) {
 
-                    absolutePath = ( base ) ? path.join( base, pathToResource ) : path.join( dir, pathToResource );
-
-                    if ( imageReplaces[ absolutePath ] !== undefined ) {
-
-                        img = imageReplaces[ absolutePath ];
-
+                        img = imageReplaces[ pathToResource ];
                         newPath = ( base ) ? path.relative( base, img.sprite ) : path.relative( dir, img.sprite );
-
                         newPath = newPath.replace( /\\/ig, '/' );
-
                         data = data.replace( resources[x], 'background-image: url("' + newPath + '"); background-position: ' +  img.x + 'px -' + img.y + 'px;' );
                     }
 
@@ -154,11 +144,11 @@ module.exports = function ( grunt ) {
 
         // Process starter
 
-        grunt.util.async.forEach( this.data.spritelist, _spriteSmithWrapper, function( err ) {
+        grunt.util.async.forEach( [this.data.spritelist], _spriteSmithWrapper, function( err ) {
 
-            for ( var j = 0; j < that.data.csslist.length; j++ ) {
+            for ( var j = 0; j < [that.data.csslist].length; j++ ) {
 
-                _insertSprites( that.data.csslist[ j ] );
+                _insertSprites( [that.data.csslist][ j ] );
 
             }
 
